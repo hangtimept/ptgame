@@ -1,0 +1,1900 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TheraForge Pro — Clinical Mastery Simulator</title>
+  <meta name="description" content="High-end clinical reasoning, gait analysis, posture assessment, special test selection, and subjective examination simulator for physical therapists." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-deep: #070b14;
+      --bg-card: rgba(18, 26, 42, 0.72);
+      --bg-elevated: rgba(28, 40, 62, 0.85);
+      --border: rgba(99, 140, 255, 0.12);
+      --border-strong: rgba(99, 140, 255, 0.28);
+      --accent: #5b8cff;
+      --accent-2: #22d3a6;
+      --accent-3: #a78bfa;
+      --danger: #f87171;
+      --warning: #fbbf24;
+      --text: #e8eefc;
+      --text-muted: #8b9bb8;
+      --text-dim: #5c6b86;
+      --success: #34d399;
+      --glass: blur(18px);
+      --radius: 16px;
+      --radius-sm: 10px;
+      --shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
+      --font: 'Inter', system-ui, sans-serif;
+      --mono: 'JetBrains Mono', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--font);
+      background: var(--bg-deep);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+      line-height: 1.5;
+    }
+
+    /* Background atmosphere */
+    .bg-grid {
+      position: fixed;
+      inset: 0;
+      background-image:
+        radial-gradient(ellipse 80% 50% at 20% -10%, rgba(91, 140, 255, 0.18), transparent),
+        radial-gradient(ellipse 60% 40% at 90% 10%, rgba(34, 211, 166, 0.10), transparent),
+        radial-gradient(ellipse 50% 30% at 50% 100%, rgba(167, 139, 250, 0.08), transparent),
+        linear-gradient(rgba(99, 140, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(99, 140, 255, 0.03) 1px, transparent 1px);
+      background-size: 100% 100%, 100% 100%, 100% 100%, 48px 48px, 48px 48px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Layout */
+    .app {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      min-height: 100vh;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      background: rgba(10, 14, 24, 0.92);
+      border-right: 1px solid var(--border);
+      backdrop-filter: var(--glass);
+      padding: 28px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0 10px 28px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 18px;
+    }
+
+    .logo-mark {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      display: grid;
+      place-items: center;
+      font-weight: 800;
+      font-size: 18px;
+      color: #061018;
+      box-shadow: 0 8px 24px rgba(91, 140, 255, 0.35);
+    }
+
+    .logo-text {
+      font-weight: 700;
+      font-size: 15px;
+      letter-spacing: -0.02em;
+    }
+    .logo-text span {
+      display: block;
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-muted);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .nav-section {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      padding: 16px 12px 8px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 11px 14px;
+      border-radius: 12px;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 13.5px;
+      font-weight: 500;
+      border: 1px solid transparent;
+      user-select: none;
+    }
+    .nav-item:hover {
+      background: rgba(91, 140, 255, 0.08);
+      color: var(--text);
+    }
+    .nav-item.active {
+      background: linear-gradient(135deg, rgba(91, 140, 255, 0.18), rgba(34, 211, 166, 0.08));
+      color: var(--text);
+      border-color: var(--border-strong);
+      box-shadow: 0 4px 16px rgba(91, 140, 255, 0.12);
+    }
+    .nav-item .icon {
+      width: 20px;
+      text-align: center;
+      font-size: 16px;
+      opacity: 0.9;
+    }
+    .nav-item .badge {
+      margin-left: auto;
+      background: rgba(91, 140, 255, 0.2);
+      color: var(--accent);
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 20px;
+    }
+
+    .sidebar-footer {
+      margin-top: auto;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+    }
+
+    .user-chip {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+    }
+    .user-avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--accent-3), var(--accent));
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+      font-size: 13px;
+    }
+    .user-info { flex: 1; min-width: 0; }
+    .user-info strong { display: block; font-size: 13px; font-weight: 600; }
+    .user-info span { font-size: 11px; color: var(--text-muted); }
+
+    /* Main */
+    .main {
+      padding: 28px 36px 60px;
+      max-width: 1280px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 28px;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .page-title h1 {
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+    }
+    .page-title p {
+      color: var(--text-muted);
+      font-size: 14px;
+      margin-top: 4px;
+    }
+
+    .top-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      border-radius: 11px;
+      font-size: 13px;
+      font-weight: 600;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      color: var(--text);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: inherit;
+    }
+    .btn:hover {
+      border-color: var(--border-strong);
+      background: var(--bg-elevated);
+      transform: translateY(-1px);
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), #3b6ef5);
+      border-color: transparent;
+      color: white;
+      box-shadow: 0 8px 24px rgba(91, 140, 255, 0.3);
+    }
+    .btn-primary:hover {
+      box-shadow: 0 12px 28px rgba(91, 140, 255, 0.4);
+    }
+    .btn-success {
+      background: linear-gradient(135deg, var(--accent-2), #10b981);
+      border-color: transparent;
+      color: #042f24;
+    }
+    .btn-ghost {
+      background: transparent;
+    }
+
+    /* Cards & panels */
+    .panel {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      backdrop-filter: var(--glass);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .panel-header {
+      padding: 18px 22px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .panel-header h2 {
+      font-size: 15px;
+      font-weight: 650;
+      letter-spacing: -0.01em;
+    }
+    .panel-body { padding: 22px; }
+
+    /* Views */
+    .view { display: none; animation: fadeIn 0.35s ease; }
+    .view.active { display: block; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Dashboard grid */
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .stat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      opacity: 0.7;
+    }
+    .stat-label {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 500;
+      margin-bottom: 8px;
+    }
+    .stat-value {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      font-variant-numeric: tabular-nums;
+    }
+    .stat-delta {
+      font-size: 12px;
+      margin-top: 6px;
+      color: var(--success);
+      font-weight: 500;
+    }
+
+    .module-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+    .module-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .module-card:hover {
+      border-color: var(--border-strong);
+      transform: translateY(-3px);
+      box-shadow: 0 16px 40px rgba(0,0,0,0.35);
+    }
+    .module-card .mod-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      font-size: 22px;
+      margin-bottom: 16px;
+      background: rgba(91, 140, 255, 0.12);
+    }
+    .module-card h3 {
+      font-size: 16px;
+      font-weight: 650;
+      margin-bottom: 6px;
+    }
+    .module-card p {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.45;
+    }
+    .module-card .progress-bar {
+      margin-top: 16px;
+      height: 4px;
+      background: rgba(255,255,255,0.06);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .module-card .progress-fill {
+      height: 100%;
+      border-radius: 4px;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      transition: width 0.6s ease;
+    }
+    .module-card .progress-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--text-dim);
+      margin-top: 6px;
+    }
+
+    /* Case / Simulation UI */
+    .sim-layout {
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 20px;
+      align-items: start;
+    }
+
+    .patient-card {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+      margin-bottom: 20px;
+    }
+    .patient-avatar {
+      width: 64px;
+      height: 64px;
+      border-radius: 16px;
+      background: linear-gradient(145deg, #2a3a5c, #1a2438);
+      border: 1px solid var(--border);
+      display: grid;
+      place-items: center;
+      font-size: 28px;
+      flex-shrink: 0;
+    }
+    .patient-meta h3 { font-size: 18px; font-weight: 650; }
+    .patient-meta .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .tag {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 9px;
+      border-radius: 6px;
+      background: rgba(91, 140, 255, 0.12);
+      color: var(--accent);
+      border: 1px solid rgba(91, 140, 255, 0.2);
+    }
+    .tag.amber { background: rgba(251, 191, 36, 0.12); color: var(--warning); border-color: rgba(251,191,36,0.25); }
+    .tag.green { background: rgba(52, 211, 153, 0.12); color: var(--success); border-color: rgba(52,211,153,0.25); }
+    .tag.red { background: rgba(248, 113, 113, 0.12); color: var(--danger); border-color: rgba(248,113,113,0.25); }
+
+    /* Chat / Subjective */
+    .chat-window {
+      display: flex;
+      flex-direction: column;
+      height: 420px;
+    }
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .msg {
+      max-width: 85%;
+      padding: 12px 14px;
+      border-radius: 14px;
+      font-size: 13.5px;
+      line-height: 1.5;
+    }
+    .msg.pt {
+      align-self: flex-start;
+      background: rgba(91, 140, 255, 0.12);
+      border: 1px solid rgba(91, 140, 255, 0.18);
+      border-bottom-left-radius: 4px;
+    }
+    .msg.therapist {
+      align-self: flex-end;
+      background: rgba(34, 211, 166, 0.12);
+      border: 1px solid rgba(34, 211, 166, 0.2);
+      border-bottom-right-radius: 4px;
+    }
+    .msg .role {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin-bottom: 4px;
+    }
+    .chat-input-row {
+      display: flex;
+      gap: 8px;
+      padding: 14px;
+      border-top: 1px solid var(--border);
+    }
+    .chat-input-row input {
+      flex: 1;
+      background: rgba(0,0,0,0.25);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 11px 14px;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 13.5px;
+      outline: none;
+    }
+    .chat-input-row input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(91, 140, 255, 0.15);
+    }
+
+    .quick-questions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 0 14px 14px;
+    }
+    .chip {
+      font-size: 12px;
+      padding: 6px 12px;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .chip:hover {
+      border-color: var(--accent);
+      color: var(--text);
+      background: rgba(91, 140, 255, 0.1);
+    }
+
+    /* Gait analysis */
+    .gait-stage {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 20px;
+    }
+    .gait-canvas-wrap {
+      background: rgba(0,0,0,0.3);
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      height: 320px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    #gaitCanvas {
+      width: 100%;
+      height: 100%;
+    }
+    .gait-controls {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+    .gait-phase-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .phase-item {
+      padding: 12px 14px;
+      border-radius: 11px;
+      border: 1px solid var(--border);
+      background: rgba(0,0,0,0.2);
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 13px;
+    }
+    .phase-item:hover, .phase-item.active {
+      border-color: var(--accent);
+      background: rgba(91, 140, 255, 0.1);
+    }
+    .phase-item strong { display: block; font-weight: 600; margin-bottom: 2px; }
+    .phase-item span { color: var(--text-muted); font-size: 12px; }
+
+    /* Posture */
+    .posture-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    .posture-view {
+      background: rgba(0,0,0,0.25);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      height: 280px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .silhouette {
+      width: 120px;
+      height: 240px;
+      position: relative;
+    }
+    .sil-head {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: #3d4f6f; margin: 0 auto 4px;
+      position: relative;
+    }
+    .sil-torso {
+      width: 58px; height: 70px;
+      background: #3d4f6f; margin: 0 auto;
+      border-radius: 8px 8px 4px 4px;
+      position: relative;
+    }
+    .sil-leg {
+      width: 18px; height: 90px;
+      background: #3d4f6f;
+      position: absolute;
+      bottom: 0;
+      border-radius: 0 0 6px 6px;
+    }
+    .sil-leg.l { left: 28px; }
+    .sil-leg.r { right: 28px; }
+    .marker {
+      position: absolute;
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: var(--danger);
+      border: 2px solid #fff;
+      box-shadow: 0 0 12px rgba(248,113,113,0.6);
+      cursor: pointer;
+      z-index: 5;
+    }
+    .finding-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .finding {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 12px;
+      border-radius: 10px;
+      background: rgba(0,0,0,0.2);
+      border: 1px solid var(--border);
+      font-size: 13px;
+    }
+    .finding input[type="checkbox"] {
+      margin-top: 3px;
+      accent-color: var(--accent);
+      width: 16px; height: 16px;
+    }
+
+    /* Test selection */
+    .test-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+    .test-card {
+      padding: 16px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: rgba(0,0,0,0.18);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .test-card:hover {
+      border-color: var(--border-strong);
+      background: rgba(91, 140, 255, 0.08);
+    }
+    .test-card.selected {
+      border-color: var(--accent-2);
+      background: rgba(34, 211, 166, 0.1);
+      box-shadow: 0 0 0 1px rgba(34, 211, 166, 0.3);
+    }
+    .test-card h4 { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+    .test-card p { font-size: 12px; color: var(--text-muted); }
+
+    /* Reasoning path */
+    .reasoning-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      position: relative;
+      padding-left: 28px;
+    }
+    .reasoning-steps::before {
+      content: '';
+      position: absolute;
+      left: 11px;
+      top: 8px;
+      bottom: 8px;
+      width: 2px;
+      background: linear-gradient(to bottom, var(--accent), var(--accent-2));
+      opacity: 0.4;
+    }
+    .r-step {
+      position: relative;
+      padding: 14px 0 14px 8px;
+    }
+    .r-step::before {
+      content: '';
+      position: absolute;
+      left: -23px;
+      top: 18px;
+      width: 12px; height: 12px;
+      border-radius: 50%;
+      background: var(--bg-deep);
+      border: 2px solid var(--accent);
+    }
+    .r-step.done::before { background: var(--accent); }
+    .r-step h4 { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+    .r-step p { font-size: 13px; color: var(--text-muted); }
+
+    /* Quiz / Feedback */
+    .option-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 16px;
+    }
+    .option {
+      padding: 14px 16px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: rgba(0,0,0,0.2);
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .option:hover { border-color: var(--accent); background: rgba(91,140,255,0.08); }
+    .option.correct {
+      border-color: var(--success);
+      background: rgba(52, 211, 153, 0.12);
+    }
+    .option.wrong {
+      border-color: var(--danger);
+      background: rgba(248, 113, 113, 0.1);
+    }
+    .option .letter {
+      width: 26px; height: 26px;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.06);
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+      font-size: 12px;
+      flex-shrink: 0;
+    }
+
+    .feedback-box {
+      margin-top: 16px;
+      padding: 16px;
+      border-radius: 12px;
+      border: 1px solid;
+      font-size: 13.5px;
+      line-height: 1.55;
+      display: none;
+    }
+    .feedback-box.show { display: block; }
+    .feedback-box.good {
+      background: rgba(52, 211, 153, 0.1);
+      border-color: rgba(52, 211, 153, 0.3);
+      color: #a7f3d0;
+    }
+    .feedback-box.bad {
+      background: rgba(248, 113, 113, 0.1);
+      border-color: rgba(248, 113, 113, 0.3);
+      color: #fecaca;
+    }
+
+    /* Score ring */
+    .score-ring {
+      width: 110px; height: 110px;
+      border-radius: 50%;
+      background: conic-gradient(var(--accent) var(--p, 0%), rgba(255,255,255,0.06) 0);
+      display: grid;
+      place-items: center;
+      position: relative;
+    }
+    .score-ring::before {
+      content: '';
+      position: absolute;
+      inset: 8px;
+      border-radius: 50%;
+      background: var(--bg-deep);
+    }
+    .score-ring span {
+      position: relative;
+      font-size: 24px;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Right panel helpers */
+    .hint-panel h3 {
+      font-size: 13px;
+      font-weight: 650;
+      margin-bottom: 12px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .hint-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .hint-list li {
+      font-size: 13px;
+      color: var(--text-muted);
+      padding-left: 14px;
+      position: relative;
+    }
+    .hint-list li::before {
+      content: '→';
+      position: absolute;
+      left: 0;
+      color: var(--accent);
+    }
+
+    /* Achievement toast */
+    .toast {
+      position: fixed;
+      bottom: 28px;
+      right: 28px;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-strong);
+      border-radius: 14px;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      box-shadow: var(--shadow);
+      transform: translateY(120%);
+      opacity: 0;
+      transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+      z-index: 100;
+      max-width: 340px;
+    }
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    .toast-icon {
+      width: 42px; height: 42px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--accent-2), var(--accent));
+      display: grid;
+      place-items: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    /* Responsive */
+    @media (max-width: 1100px) {
+      .app { grid-template-columns: 1fr; }
+      .sidebar {
+        position: fixed;
+        left: -280px;
+        z-index: 50;
+        transition: left 0.3s ease;
+        width: 260px;
+      }
+      .sidebar.open { left: 0; }
+      .stat-grid { grid-template-columns: repeat(2, 1fr); }
+      .module-grid { grid-template-columns: 1fr 1fr; }
+      .sim-layout, .gait-stage, .posture-grid { grid-template-columns: 1fr; }
+      .test-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 640px) {
+      .main { padding: 20px 16px 40px; }
+      .stat-grid, .module-grid { grid-template-columns: 1fr; }
+    }
+
+    /* Mobile menu toggle */
+    .menu-toggle {
+      display: none;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      width: 40px; height: 40px;
+      place-items: center;
+      cursor: pointer;
+      font-size: 18px;
+    }
+    @media (max-width: 1100px) {
+      .menu-toggle { display: grid; }
+    }
+
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 40;
+      display: none;
+    }
+    .overlay.show { display: block; }
+
+    /* Utility */
+    .flex { display: flex; }
+    .gap-2 { gap: 8px; }
+    .gap-3 { gap: 12px; }
+    .items-center { align-items: center; }
+    .justify-between { justify-content: space-between; }
+    .mt-3 { margin-top: 12px; }
+    .mt-4 { margin-top: 16px; }
+    .mb-2 { margin-bottom: 8px; }
+    .text-muted { color: var(--text-muted); }
+    .text-sm { font-size: 13px; }
+    .mono { font-family: var(--mono); font-size: 12px; }
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+  <div class="bg-grid"></div>
+  <div class="overlay" id="overlay"></div>
+
+  <div class="app">
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+      <div class="logo">
+        <div class="logo-mark">TF</div>
+        <div class="logo-text">
+          TheraForge Pro
+          <span>Clinical Simulator</span>
+        </div>
+      </div>
+
+      <div class="nav-section">Core Training</div>
+      <div class="nav-item active" data-view="dashboard">
+        <span class="icon">◈</span> Command Center
+      </div>
+      <div class="nav-item" data-view="subjective">
+        <span class="icon">◎</span> Subjective Exam
+        <span class="badge">NEW</span>
+      </div>
+      <div class="nav-item" data-view="reasoning">
+        <span class="icon">⬡</span> Clinical Reasoning
+      </div>
+      <div class="nav-item" data-view="gait">
+        <span class="icon">⇄</span> Gait Analysis
+      </div>
+      <div class="nav-item" data-view="posture">
+        <span class="icon">↕</span> Posture Analysis
+      </div>
+      <div class="nav-item" data-view="tests">
+        <span class="icon">✚</span> Special Tests
+      </div>
+
+      <div class="nav-section">Cases & Progress</div>
+      <div class="nav-item" data-view="cases">
+        <span class="icon">▣</span> Case Library
+      </div>
+      <div class="nav-item" data-view="progress">
+        <span class="icon">◎</span> Mastery Dashboard
+      </div>
+
+      <div class="sidebar-footer">
+        <div class="user-chip">
+          <div class="user-avatar">PT</div>
+          <div class="user-info">
+            <strong>Dr. Ellis</strong>
+            <span>Level 7 · Ortho Track</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main">
+      <div class="topbar">
+        <div class="flex items-center gap-3">
+          <button class="menu-toggle" id="menuToggle">☰</button>
+          <div class="page-title">
+            <h1 id="pageTitle">Command Center</h1>
+            <p id="pageSubtitle">High-fidelity clinical skill development for physical therapists</p>
+          </div>
+        </div>
+        <div class="top-actions">
+          <button class="btn btn-ghost" id="resetProgress">Reset Session</button>
+          <button class="btn btn-primary" id="startCaseBtn">Start New Case →</button>
+        </div>
+      </div>
+
+      <!-- DASHBOARD -->
+      <section class="view active" id="view-dashboard">
+        <div class="stat-grid">
+          <div class="stat-card">
+            <div class="stat-label">Clinical Accuracy</div>
+            <div class="stat-value" id="statAccuracy">87%</div>
+            <div class="stat-delta">↑ 4% this week</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Cases Completed</div>
+            <div class="stat-value" id="statCases">24</div>
+            <div class="stat-delta">3 remaining in path</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Reasoning Score</div>
+            <div class="stat-value" id="statReasoning">92</div>
+            <div class="stat-delta">Top 12% cohort</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Mastery Points</div>
+            <div class="stat-value" id="statXP">3,480</div>
+            <div class="stat-delta">Next rank: 4,000</div>
+          </div>
+        </div>
+
+        <div class="module-grid">
+          <div class="module-card" data-goto="subjective">
+            <div class="mod-icon" style="background:rgba(91,140,255,0.15)">◎</div>
+            <h3>Subjective Examination</h3>
+            <p>Master history-taking, red-flag screening, and patient communication under time pressure.</p>
+            <div class="progress-bar"><div class="progress-fill" style="width:68%"></div></div>
+            <div class="progress-label"><span>68% mastery</span><span>12 scenarios</span></div>
+          </div>
+          <div class="module-card" data-goto="reasoning">
+            <div class="mod-icon" style="background:rgba(167,139,250,0.15)">⬡</div>
+            <h3>Clinical Reasoning</h3>
+            <p>Build differential diagnoses, hypothesis-driven examination, and evidence-based pathways.</p>
+            <div class="progress-bar"><div class="progress-fill" style="width:74%"></div></div>
+            <div class="progress-label"><span>74% mastery</span><span>18 cases</span></div>
+          </div>
+          <div class="module-card" data-goto="gait">
+            <div class="mod-icon" style="background:rgba(34,211,166,0.15)">⇄</div>
+            <h3>Gait Analysis Lab</h3>
+            <p>Identify temporal-spatial deviations, kinematic faults, and compensatory patterns in real time.</p>
+            <div class="progress-bar"><div class="progress-fill" style="width:55%"></div></div>
+            <div class="progress-label"><span>55% mastery</span><span>9 modules</span></div>
+          </div>
+          <div class="module-card" data-goto="posture">
+            <div class="mod-icon" style="background:rgba(251,191,36,0.12)">↕</div>
+            <h3>Postural Assessment</h3>
+            <p>Observe, mark, and interpret static posture from multiple planes with clinical precision.</p>
+            <div class="progress-bar"><div class="progress-fill" style="width:61%"></div></div>
+            <div class="progress-label"><span>61% mastery</span><span>7 modules</span></div>
+          </div>
+          <div class="module-card" data-goto="tests">
+            <div class="mod-icon" style="background:rgba(248,113,113,0.12)">✚</div>
+            <h3>Special Test Selector</h3>
+            <p>Choose the highest-yield tests, interpret results, and avoid unnecessary testing.</p>
+            <div class="progress-bar"><div class="progress-fill" style="width:80%"></div></div>
+            <div class="progress-label"><span>80% mastery</span><span>22 tests</span></div>
+          </div>
+          <div class="module-card" data-goto="cases">
+            <div class="mod-icon" style="background:rgba(91,140,255,0.12)">▣</div>
+            <h3>Full Case Simulations</h3>
+            <p>End-to-end patient encounters combining all skills with adaptive difficulty.</p>
+            <div class="progress-bar"><div class="progress-fill" style="width:42%"></div></div>
+            <div class="progress-label"><span>42% mastery</span><span>15 cases</span></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SUBJECTIVE -->
+      <section class="view" id="view-subjective">
+        <div class="sim-layout">
+          <div class="panel">
+            <div class="panel-header">
+              <h2>Patient Encounter — Subjective History</h2>
+              <span class="tag amber">Timed · 8:00</span>
+            </div>
+            <div class="panel-body" style="padding:0">
+              <div class="patient-card" style="padding:20px 22px 0">
+                <div class="patient-avatar">👩‍💼</div>
+                <div class="patient-meta">
+                  <h3>Sarah M., 42 y/o · Office Manager</h3>
+                  <div class="tags">
+                    <span class="tag">LBP</span>
+                    <span class="tag amber">Insidious onset</span>
+                    <span class="tag">6 weeks</span>
+                  </div>
+                </div>
+              </div>
+              <div class="chat-window">
+                <div class="chat-messages" id="chatMessages">
+                  <div class="msg pt">
+                    <div class="role">Patient</div>
+                    Hi… my lower back has been bothering me for about six weeks. It started after a long week of meetings. I’m hoping you can figure out what’s going on.
+                  </div>
+                </div>
+                <div class="quick-questions" id="quickQs">
+                  <span class="chip" data-q="onset">Onset details</span>
+                  <span class="chip" data-q="location">Pain location</span>
+                  <span class="chip" data-q="aggravating">Aggravating factors</span>
+                  <span class="chip" data-q="relieving">Relieving factors</span>
+                  <span class="chip" data-q="night">Night pain / red flags</span>
+                  <span class="chip" data-q="neuro">Neurological symptoms</span>
+                  <span class="chip" data-q="history">Past medical history</span>
+                  <span class="chip" data-q="goals">Patient goals</span>
+                </div>
+                <div class="chat-input-row">
+                  <input type="text" id="chatInput" placeholder="Type a focused clinical question…" />
+                  <button class="btn btn-primary" id="sendChat">Ask</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header"><h2>Clinical Notes</h2></div>
+            <div class="panel-body">
+              <div class="hint-panel">
+                <h3>Captured Findings</h3>
+                <ul class="hint-list" id="subjectiveNotes">
+                  <li>Awaiting structured history…</li>
+                </ul>
+                <div class="mt-4">
+                  <button class="btn btn-success" style="width:100%" id="finishSubjective">Complete & Score History</button>
+                </div>
+                <div class="mt-4" style="display:flex;justify-content:center">
+                  <div class="score-ring" id="subjScoreRing" style="--p:0%"><span>0</span></div>
+                </div>
+                <p class="text-sm text-muted mt-3" style="text-align:center" id="subjScoreLabel">Ask targeted questions to raise your clinical yield score.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- CLINICAL REASONING -->
+      <section class="view" id="view-reasoning">
+        <div class="sim-layout">
+          <div class="panel">
+            <div class="panel-header">
+              <h2>Hypothesis-Driven Clinical Reasoning</h2>
+              <span class="tag green">Case: Lateral Knee Pain</span>
+            </div>
+            <div class="panel-body">
+              <p class="text-sm text-muted mb-2">A 28-year-old recreational runner presents with progressive lateral knee pain for 3 months. No trauma. Pain is worse with downhill running and prolonged sitting.</p>
+              
+              <h3 style="font-size:15px;margin:20px 0 12px">What is your leading hypothesis right now?</h3>
+              <div class="option-list" id="reasoningOptions">
+                <div class="option" data-correct="true">
+                  <span class="letter">A</span>
+                  Iliotibial band syndrome (ITBS)
+                </div>
+                <div class="option" data-correct="false">
+                  <span class="letter">B</span>
+                  Lateral meniscus tear
+                </div>
+                <div class="option" data-correct="false">
+                  <span class="letter">C</span>
+                  Patellofemoral pain syndrome
+                </div>
+                <div class="option" data-correct="false">
+                  <span class="letter">D</span>
+                  L4-5 radiculopathy
+                </div>
+              </div>
+              <div class="feedback-box" id="reasoningFeedback"></div>
+
+              <div class="mt-4" id="reasoningNext" style="display:none">
+                <h3 style="font-size:15px;margin-bottom:12px">Next best examination priority?</h3>
+                <div class="option-list">
+                  <div class="option" data-correct="true">
+                    <span class="letter">A</span>
+                    Ober’s test + hip abductor strength + gait observation
+                  </div>
+                  <div class="option" data-correct="false">
+                    <span class="letter">B</span>
+                    McMurray’s test only
+                  </div>
+                  <div class="option" data-correct="false">
+                    <span class="letter">C</span>
+                    Straight leg raise bilaterally
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header"><h2>Reasoning Pathway</h2></div>
+            <div class="panel-body">
+              <div class="reasoning-steps">
+                <div class="r-step done">
+                  <h4>1. Pattern Recognition</h4>
+                  <p>Activity-related lateral knee pain in a runner → high pre-test probability of ITBS.</p>
+                </div>
+                <div class="r-step done">
+                  <h4>2. Red Flag Screen</h4>
+                  <p>No trauma, no night pain, no neurological signs → musculoskeletal primary.</p>
+                </div>
+                <div class="r-step">
+                  <h4>3. Hypothesis Ranking</h4>
+                  <p>ITBS > PFPS > meniscal > referred lumbar.</p>
+                </div>
+                <div class="r-step">
+                  <h4>4. Targeted Testing</h4>
+                  <p>Select tests with best likelihood ratios for the leading hypothesis.</p>
+                </div>
+                <div class="r-step">
+                  <h4>5. Intervention Match</h4>
+                  <p>Load management + hip strength + running form before imaging.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- GAIT -->
+      <section class="view" id="view-gait">
+        <div class="panel">
+          <div class="panel-header">
+            <h2>Gait Analysis Laboratory</h2>
+            <div class="flex gap-2">
+              <button class="btn" id="gaitPlay">▶ Play Cycle</button>
+              <button class="btn" id="gaitPause">⏸ Pause</button>
+              <button class="btn btn-primary" id="gaitScore">Submit Analysis</button>
+            </div>
+          </div>
+          <div class="panel-body">
+            <div class="gait-stage">
+              <div>
+                <div class="gait-canvas-wrap">
+                  <canvas id="gaitCanvas" width="640" height="320"></canvas>
+                </div>
+                <div class="gait-controls">
+                  <span class="tag">Speed: Normal</span>
+                  <span class="tag amber">View: Sagittal</span>
+                  <span class="tag">Patient: Post-op ACL 14 wks</span>
+                </div>
+                <p class="text-sm text-muted mt-3">Observe the animated gait cycle. Identify primary deviations and compensations.</p>
+              </div>
+              <div>
+                <h3 style="font-size:14px;font-weight:600;margin-bottom:12px">Select observed deviations</h3>
+                <div class="gait-phase-list" id="gaitFindings">
+                  <div class="phase-item" data-finding="quad-avoidance">
+                    <strong>Quadriceps avoidance</strong>
+                    <span>Reduced knee flexion in loading response</span>
+                  </div>
+                  <div class="phase-item" data-finding="trendelenburg">
+                    <strong>Trendelenburg / contralateral pelvic drop</strong>
+                    <span>Hip abductor weakness on stance side</span>
+                  </div>
+                  <div class="phase-item" data-finding="vaulting">
+                    <strong>Vaulting</strong>
+                    <span>Early heel rise on contralateral side</span>
+                  </div>
+                  <div class="phase-item" data-finding="circumduction">
+                    <strong>Circumduction</strong>
+                    <span>Swing-phase lateral arc of the limb</span>
+                  </div>
+                  <div class="phase-item" data-finding="limited-flex">
+                    <strong>Limited terminal knee extension</strong>
+                    <span>Persistent knee flexion at mid-stance</span>
+                  </div>
+                </div>
+                <div class="feedback-box mt-3" id="gaitFeedback"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- POSTURE -->
+      <section class="view" id="view-posture">
+        <div class="panel">
+          <div class="panel-header">
+            <h2>Static Postural Assessment</h2>
+            <span class="tag">Anterior · Lateral · Posterior views</span>
+          </div>
+          <div class="panel-body">
+            <div class="posture-grid">
+              <div>
+                <div class="posture-view" id="postureView">
+                  <!-- Simplified interactive silhouette -->
+                  <div class="silhouette" id="silhouette">
+                    <div class="sil-head"></div>
+                    <div class="sil-torso"></div>
+                    <div class="sil-leg l"></div>
+                    <div class="sil-leg r"></div>
+                    <!-- Markers placed via JS -->
+                  </div>
+                </div>
+                <p class="text-sm text-muted mt-3">Click the silhouette to place clinical markers on observed deviations.</p>
+                <div class="flex gap-2 mt-3">
+                  <button class="btn" id="addMarker">+ Add Marker</button>
+                  <button class="btn btn-ghost" id="clearMarkers">Clear</button>
+                </div>
+              </div>
+              <div>
+                <h3 style="font-size:14px;font-weight:600;margin-bottom:12px">Document findings</h3>
+                <div class="finding-list" id="postureFindings">
+                  <label class="finding"><input type="checkbox" data-f="forward-head" /> Forward head posture</label>
+                  <label class="finding"><input type="checkbox" data-f="rounded-shoulders" /> Rounded / protracted shoulders</label>
+                  <label class="finding"><input type="checkbox" data-f="increased-kyphosis" /> Increased thoracic kyphosis</label>
+                  <label class="finding"><input type="checkbox" data-f="anterior-pelvic" /> Anterior pelvic tilt</label>
+                  <label class="finding"><input type="checkbox" data-f="knee-hyperext" /> Knee hyperextension</label>
+                  <label class="finding"><input type="checkbox" data-f="pronation" /> Excessive foot pronation</label>
+                  <label class="finding"><input type="checkbox" data-f="asymmetry" /> Significant left-right asymmetry</label>
+                </div>
+                <button class="btn btn-primary mt-4" style="width:100%" id="scorePosture">Submit Postural Analysis</button>
+                <div class="feedback-box mt-3" id="postureFeedback"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SPECIAL TESTS -->
+      <section class="view" id="view-tests">
+        <div class="sim-layout">
+          <div class="panel">
+            <div class="panel-header">
+              <h2>Special Test Selection — Clinical Efficiency</h2>
+              <span class="tag amber">Hypothesis: ACL deficiency</span>
+            </div>
+            <div class="panel-body">
+              <p class="text-sm text-muted mb-2">Patient is a 19-year-old soccer player 2 days post non-contact pivot injury. Moderate effusion, limited ROM, positive sense of instability. Select the <strong>highest-yield</strong> combination of tests (max 3).</p>
+              <div class="test-grid" id="testGrid">
+                <div class="test-card" data-test="lachman" data-value="high">
+                  <h4>Lachman Test</h4>
+                  <p>Highest sensitivity for ACL. Gold-standard clinical test.</p>
+                </div>
+                <div class="test-card" data-test="anterior-drawer" data-value="med">
+                  <h4>Anterior Drawer</h4>
+                  <p>Useful but lower sensitivity in acute setting with hamstring guarding.</p>
+                </div>
+                <div class="test-card" data-test="pivot-shift" data-value="high">
+                  <h4>Pivot Shift</h4>
+                  <p>High specificity. May be limited by pain/guarding acutely.</p>
+                </div>
+                <div class="test-card" data-test="mcmurray" data-value="low">
+                  <h4>McMurray Test</h4>
+                  <p>Meniscal test — lower priority given instability mechanism.</p>
+                </div>
+                <div class="test-card" data-test="valgus" data-value="med">
+                  <h4>Valgus Stress (0° & 30°)</h4>
+                  <p>Rule out concurrent MCL involvement.</p>
+                </div>
+                <div class="test-card" data-test="slr" data-value="low">
+                  <h4>Straight Leg Raise</h4>
+                  <p>Neurological screen — low yield for this mechanism.</p>
+                </div>
+              </div>
+              <div class="mt-4 flex gap-2">
+                <button class="btn btn-primary" id="submitTests">Lock Selection & Score</button>
+                <button class="btn btn-ghost" id="clearTests">Clear</button>
+              </div>
+              <div class="feedback-box mt-3" id="testFeedback"></div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header"><h2>Test Performance Metrics</h2></div>
+            <div class="panel-body">
+              <div class="hint-panel">
+                <h3>Clinical Decision Support</h3>
+                <ul class="hint-list">
+                  <li>Prioritize tests with best +LR / −LR for the leading hypothesis.</li>
+                  <li>Avoid stacking low-yield tests that add little information.</li>
+                  <li>Consider patient irritability and acute pain when sequencing.</li>
+                  <li>Document both positive and important negative findings.</li>
+                </ul>
+                <div class="mt-4">
+                  <div class="stat-label">Selected tests</div>
+                  <div id="selectedCount" class="stat-value" style="font-size:22px">0 / 3</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- CASES -->
+      <section class="view" id="view-cases">
+        <div class="module-grid">
+          <div class="module-card" data-goto="subjective">
+            <div class="mod-icon">①</div>
+            <h3>Acute Low Back Pain</h3>
+            <p>42 y/o office worker · insidious onset · rule out red flags · classify & plan.</p>
+            <div class="progress-label mt-3"><span class="tag green">Available</span></div>
+          </div>
+          <div class="module-card" data-goto="reasoning">
+            <div class="mod-icon">②</div>
+            <h3>Runner’s Lateral Knee Pain</h3>
+            <p>IT band vs meniscus vs PFPS differentiation with hypothesis testing.</p>
+            <div class="progress-label mt-3"><span class="tag green">Available</span></div>
+          </div>
+          <div class="module-card" data-goto="gait">
+            <div class="mod-icon">③</div>
+            <h3>Post-ACL Reconstruction Gait</h3>
+            <p>14-week post-op gait deviations and return-to-run readiness.</p>
+            <div class="progress-label mt-3"><span class="tag green">Available</span></div>
+          </div>
+          <div class="module-card">
+            <div class="mod-icon">④</div>
+            <h3>Cervical Radiculopathy</h3>
+            <p>Neurodynamic testing, cluster rules, and differential with shoulder pathology.</p>
+            <div class="progress-label mt-3"><span class="tag">Coming soon</span></div>
+          </div>
+          <div class="module-card">
+            <div class="mod-icon">⑤</div>
+            <h3>Chronic Ankle Instability</h3>
+            <p>Functional testing, proprioception, and progressive loading decisions.</p>
+            <div class="progress-label mt-3"><span class="tag">Coming soon</span></div>
+          </div>
+          <div class="module-card">
+            <div class="mod-icon">⑥</div>
+            <h3>Geriatric Fall Risk</h3>
+            <p>Multi-system screen, balance batteries, and environmental reasoning.</p>
+            <div class="progress-label mt-3"><span class="tag">Coming soon</span></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PROGRESS -->
+      <section class="view" id="view-progress">
+        <div class="stat-grid">
+          <div class="stat-card">
+            <div class="stat-label">Overall Mastery</div>
+            <div class="stat-value">71%</div>
+            <div class="stat-delta">Across all modules</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Streak</div>
+            <div class="stat-value">9 days</div>
+            <div class="stat-delta">Personal best: 14</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Avg. Case Time</div>
+            <div class="stat-value">11:40</div>
+            <div class="stat-delta">Efficient & thorough</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Peer Rank</div>
+            <div class="stat-value">Top 18%</div>
+            <div class="stat-delta">Ortho residency cohort</div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-header"><h2>Skill Radar & Recommendations</h2></div>
+          <div class="panel-body">
+            <p class="text-sm text-muted">Your strongest domains are Special Test selection and Clinical Reasoning. Focus next on Gait Analysis depth and full-case integration under time pressure.</p>
+            <div class="mt-4 flex gap-3" style="flex-wrap:wrap">
+              <span class="tag green">Subjective: Strong</span>
+              <span class="tag green">Reasoning: Excellent</span>
+              <span class="tag amber">Gait: Developing</span>
+              <span class="tag amber">Posture: Developing</span>
+              <span class="tag green">Special Tests: Excellent</span>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast">
+    <div class="toast-icon">✦</div>
+    <div>
+      <strong id="toastTitle">Achievement Unlocked</strong>
+      <div class="text-sm text-muted" id="toastMsg">You completed a high-yield subjective examination.</div>
+    </div>
+  </div>
+
+  <script>
+    // ========== STATE ==========
+    const state = {
+      view: 'dashboard',
+      subjectiveScore: 0,
+      asked: new Set(),
+      gaitSelected: new Set(),
+      postureChecked: new Set(),
+      testsSelected: new Set(),
+      markers: [],
+      gaitPlaying: false,
+      gaitFrame: 0
+    };
+
+    // ========== NAVIGATION ==========
+    const views = document.querySelectorAll('.view');
+    const navItems = document.querySelectorAll('.nav-item');
+    const pageTitle = document.getElementById('pageTitle');
+    const pageSubtitle = document.getElementById('pageSubtitle');
+
+    const titles = {
+      dashboard: ['Command Center', 'High-fidelity clinical skill development for physical therapists'],
+      subjective: ['Subjective Examination', 'Structured history-taking with red-flag awareness'],
+      reasoning: ['Clinical Reasoning', 'Hypothesis generation, ranking, and testing'],
+      gait: ['Gait Analysis Lab', 'Real-time kinematic and temporal-spatial observation'],
+      posture: ['Postural Assessment', 'Multi-plane static posture analysis'],
+      tests: ['Special Test Selector', 'Likelihood-ratio driven test selection'],
+      cases: ['Case Library', 'End-to-end simulated patient encounters'],
+      progress: ['Mastery Dashboard', 'Track competence across clinical domains']
+    };
+
+    function switchView(name) {
+      state.view = name;
+      views.forEach(v => v.classList.remove('active'));
+      const target = document.getElementById('view-' + name);
+      if (target) target.classList.add('active');
+      navItems.forEach(n => n.classList.toggle('active', n.dataset.view === name));
+      if (titles[name]) {
+        pageTitle.textContent = titles[name][0];
+        pageSubtitle.textContent = titles[name][1];
+      }
+      document.getElementById('sidebar').classList.remove('open');
+      document.getElementById('overlay').classList.remove('show');
+      if (name === 'gait') startGaitLoop();
+    }
+
+    navItems.forEach(item => {
+      item.addEventListener('click', () => switchView(item.dataset.view));
+    });
+
+    document.querySelectorAll('[data-goto]').forEach(el => {
+      el.addEventListener('click', () => switchView(el.dataset.goto));
+    });
+
+    document.getElementById('startCaseBtn').addEventListener('click', () => switchView('subjective'));
+    document.getElementById('menuToggle').addEventListener('click', () => {
+      document.getElementById('sidebar').classList.toggle('open');
+      document.getElementById('overlay').classList.toggle('show');
+    });
+    document.getElementById('overlay').addEventListener('click', () => {
+      document.getElementById('sidebar').classList.remove('open');
+      document.getElementById('overlay').classList.remove('show');
+    });
+
+    // ========== SUBJECTIVE CHAT ==========
+    const responses = {
+      onset: "It started gradually about six weeks ago after a particularly intense week of back-to-back meetings. No single trauma that I can remember.",
+      location: "It’s mostly across the lower lumbar area, a bit more on the right side. Sometimes it radiates into the right buttock but never past the knee.",
+      aggravating: "Sitting for more than 30–40 minutes, getting up from a chair, and sometimes when I bend to pick something up. Coughing doesn’t change it much.",
+      relieving: "Walking around helps a little. Lying on my side with a pillow between my knees is the most comfortable. Heat feels good temporarily.",
+      night: "I can sleep through the night most of the time. No night sweats or unexplained weight loss. I’m not waking up specifically because of the pain.",
+      neuro: "No numbness, tingling, or weakness in my legs. Bowel and bladder are completely normal.",
+      history: "I had a similar episode about four years ago that resolved with PT. No surgeries. I take occasional ibuprofen. No other major medical issues.",
+      goals: "I just want to sit through a full workday without constantly shifting and to feel confident lifting my toddler again."
+    };
+
+    const notesMap = {
+      onset: "Insidious onset ~6 weeks, post prolonged sitting load",
+      location: "Lower lumbar ± right buttock, no radiation past knee",
+      aggravating: "Prolonged sitting, sit-to-stand, flexion",
+      relieving: "Walking, side-lying with pillow, heat",
+      night: "No night pain, no constitutional symptoms",
+      neuro: "No neuro symptoms, bowel/bladder intact",
+      history: "Prior LBP episode 4 yrs ago, resolved with PT",
+      goals: "Work tolerance + lifting confidence with toddler"
+    };
+
+    function addMessage(text, who) {
+      const div = document.createElement('div');
+      div.className = 'msg ' + who;
+      div.innerHTML = `<div class="role">${who === 'pt' ? 'Patient' : 'You'}</div>${text}`;
+      document.getElementById('chatMessages').appendChild(div);
+      document.getElementById('chatMessages').scrollTop = 9999;
+    }
+
+    function askQuestion(key) {
+      if (state.asked.has(key)) return;
+      state.asked.add(key);
+      const labels = {
+        onset: "Can you tell me more about how this started?",
+        location: "Where exactly do you feel the pain, and does it travel anywhere?",
+        aggravating: "What activities or positions make it worse?",
+        relieving: "What seems to ease the symptoms?",
+        night: "Are you having any night pain, or other symptoms like fever or weight loss?",
+        neuro: "Any numbness, tingling, weakness, or changes in bowel or bladder?",
+        history: "Have you had similar problems before? Any other medical history I should know?",
+        goals: "What are you hoping to get back to doing?"
+      };
+      addMessage(labels[key] || key, 'therapist');
+      setTimeout(() => {
+        addMessage(responses[key], 'pt');
+        updateSubjectiveNotes();
+        updateSubjectiveScore();
+      }, 600);
+    }
+
+    document.getElementById('quickQs').addEventListener('click', e => {
+      const chip = e.target.closest('.chip');
+      if (chip) askQuestion(chip.dataset.q);
+    });
+
+    document.getElementById('sendChat').addEventListener('click', () => {
+      const input = document.getElementById('chatInput');
+      const val = input.value.trim().toLowerCase();
+      if (!val) return;
+      addMessage(input.value.trim(), 'therapist');
+      input.value = '';
+      // Simple keyword routing
+      let matched = false;
+      for (const [k, v] of Object.entries(responses)) {
+        if (val.includes(k) || (k === 'night' && (val.includes('night') || val.includes('red flag'))) ||
+            (k === 'neuro' && (val.includes('numb') || val.includes('tingl') || val.includes('weak') || val.includes('bladder')))) {
+          setTimeout(() => { addMessage(v, 'pt'); state.asked.add(k); updateSubjectiveNotes(); updateSubjectiveScore(); }, 700);
+          matched = true;
+          break;
+        }
+      }
+      if (!matched) {
+        setTimeout(() => addMessage("I’m not sure I understand that question. Could you ask it another way?", 'pt'), 700);
+      }
+    });
+
+    document.getElementById('chatInput').addEventListener('keydown', e => {
+      if (e.key === 'Enter') document.getElementById('sendChat').click();
+    });
+
+    function updateSubjectiveNotes() {
+      const ul = document.getElementById('subjectiveNotes');
+      ul.innerHTML = '';
+      if (state.asked.size === 0) {
+        ul.innerHTML = '<li>Awaiting structured history…</li>';
+        return;
+      }
+      state.asked.forEach(k => {
+        const li = document.createElement('li');
+        li.textContent = notesMap[k] || k;
+        ul.appendChild(li);
+      });
+    }
+
+    function updateSubjectiveScore() {
+      const score = Math.min(100, Math.round((state.asked.size / 8) * 100));
+      state.subjectiveScore = score;
+      const ring = document.getElementById('subjScoreRing');
+      ring.style.setProperty('--p', score + '%');
+      ring.querySelector('span').textContent = score;
+      document.getElementById('subjScoreLabel').textContent =
+        score >= 85 ? 'Excellent clinical yield — key red flags and function covered.' :
+        score >= 60 ? 'Good coverage. Consider remaining high-value questions.' :
+        'Continue gathering history to improve diagnostic confidence.';
+    }
+
+    document.getElementById('finishSubjective').addEventListener('click', () => {
+      updateSubjectiveScore();
+      if (state.subjectiveScore >= 75) {
+        showToast('High-Yield History', 'You captured the essential subjective data efficiently.');
+      } else {
+        showToast('Incomplete History', 'Several high-value domains remain unexplored.');
+      }
+    });
+
+    // ========== REASONING ==========
+    document.getElementById('reasoningOptions').addEventListener('click', e => {
+      const opt = e.target.closest('.option');
+      if (!opt || opt.classList.contains('correct') || opt.classList.contains('wrong')) return;
+      const correct = opt.dataset.correct === 'true';
+      document.querySelectorAll('#reasoningOptions .option').forEach(o => {
+        o.classList.add(o.dataset.correct === 'true' ? 'correct' : 'wrong');
+      });
+      const fb = document.getElementById('reasoningFeedback');
+      fb.className = 'feedback-box show ' + (correct ? 'good' : 'bad');
+      fb.innerHTML = correct
+        ? '<strong>Correct.</strong> Activity-related lateral knee pain in a runner with no trauma carries a high pre-test probability for IT band syndrome. Next you would confirm with targeted tests and rule out mimics.'
+        : '<strong>Not the strongest lead.</strong> While other diagnoses remain possible, the history most strongly supports IT band syndrome. Re-rank your hypotheses.';
+      if (correct) {
+        document.getElementById('reasoningNext').style.display = 'block';
+        showToast('Reasoning Solid', 'Leading hypothesis correctly identified.');
+      }
+    });
+
+    // ========== GAIT ==========
+    const gaitCanvas = document.getElementById('gaitCanvas');
+    const gctx = gaitCanvas.getContext('2d');
+    let gaitAnimId = null;
+
+    function drawGait(frame) {
+      const w = gaitCanvas.width;
+      const h = gaitCanvas.height;
+      gctx.clearRect(0, 0, w, h);
+
+      // Ground
+      gctx.strokeStyle = 'rgba(99,140,255,0.25)';
+      gctx.lineWidth = 2;
+      gctx.beginPath();
+      gctx.moveTo(40, h - 50);
+      gctx.lineTo(w - 40, h - 50);
+      gctx.stroke();
+
+      // Simple stick figure walking (simplified cycle)
+      const t = (frame % 60) / 60;
+      const x = 80 + (t * (w - 160));
+      const baseY = h - 50;
+
+      // Body
+      const hipY = baseY - 90;
+      const kneeFlex = Math.sin(t * Math.PI * 2) * 25;
+      const kneeFlex2 = Math.sin((t + 0.5) * Math.PI * 2) * 25;
+
+      gctx.strokeStyle = '#8ba4d9';
+      gctx.lineWidth = 4;
+      gctx.lineCap = 'round';
+
+      // Torso
+      gctx.beginPath();
+      gctx.moveTo(x, hipY);
+      gctx.lineTo(x, hipY - 55);
+      gctx.stroke();
+
+      // Head
+      gctx.beginPath();
+      gctx.arc(x, hipY - 70, 14, 0, Math.PI * 2);
+      gctx.stroke();
+
+      // Arms (simple)
+      gctx.beginPath();
+      gctx.moveTo(x, hipY - 45);
+      gctx.lineTo(x - 25 + Math.sin(t * Math.PI * 2) * 15, hipY - 10);
+      gctx.moveTo(x, hipY - 45);
+      gctx.lineTo(x + 25 - Math.sin(t * Math.PI * 2) * 15, hipY - 10);
+      gctx.stroke();
+
+      // Legs — one with reduced knee flexion to simulate quad avoidance
+      // Stance leg (simplified)
+      const stanceKnee = hipY + 40 - Math.abs(kneeFlex) * 0.4; // reduced flexion
+      gctx.beginPath();
+      gctx.moveTo(x, hipY);
+      gctx.lineTo(x - 8, stanceKnee);
+      gctx.lineTo(x - 5, baseY);
+      gctx.stroke();
+
+      // Swing leg
+      gctx.beginPath();
+      gctx.moveTo(x, hipY);
+      gctx.lineTo(x + 18, hipY + 35 + kneeFlex2 * 0.3);
+      gctx.lineTo(x + 30, baseY - 5);
+      gctx.stroke();
+
+      // Phase label
+      gctx.fillStyle = 'rgba(139,155,184,0.9)';
+      gctx.font = '12px Inter, sans-serif';
+      const phase = t < 0.1 ? 'Initial Contact' : t < 0.3 ? 'Loading Response' : t < 0.5 ? 'Mid Stance' : t < 0.7 ? 'Terminal Stance' : t < 0.85 ? 'Pre-Swing' : 'Swing';
+      gctx.fillText(phase, 24, 28);
+    }
+
+    function startGaitLoop() {
+      if (gaitAnimId) cancelAnimationFrame(gaitAnimId);
+      const loop = () => {
+        if (state.gaitPlaying) {
+          state.gaitFrame++;
+          drawGait(state.gaitFrame);
+        } else {
+          drawGait(state.gaitFrame);
+        }
+        gaitAnimId = requestAnimationFrame(loop);
+      };
+      state.gaitPlaying = true;
+      loop();
+    }
+
+    document.getElementById('gaitPlay').addEventListener('click', () => { state.gaitPlaying = true; });
+    document.getElementById('gaitPause').addEventListener('click', () => { state.gaitPlaying = false; });
+
+    document.getElementById('gaitFindings').addEventListener('click', e => {
+      const item = e.target.closest('.phase-item');
+      if (!item) return;
+      item.classList.toggle('active');
+      const f = item.dataset.finding;
+      if (state.gaitSelected.has(f)) state.gaitSelected.delete(f);
+      else state.gaitSelected.add(f);
+    });
+
+    document.getElementById('gaitScore').addEventListener('click', () => {
+      const correct = new Set(['quad-avoidance', 'limited-flex']);
+      let hits = 0;
+      state.gaitSelected.forEach(f => { if (correct.has(f)) hits++; });
+      const extra = [...state.gaitSelected].filter(f => !correct.has(f)).length;
+      const fb = document.getElementById('gaitFeedback');
+      fb.className = 'feedback-box show ' + (hits >= 1 && extra <= 1 ? 'good' : 'bad');
+      fb.innerHTML = hits >= 1
+        ? `<strong>Solid observation.</strong> Primary findings in this post-ACL gait often include quadriceps avoidance and limited terminal extension. You identified ${hits} key deviation(s).`
+        : `<strong>Re-examine the cycle.</strong> Look closely at knee behavior during loading response and mid-stance.`;
+      if (hits >= 1) showToast('Gait Insight', 'Key kinematic deviation recognized.');
+    });
+
+    // ========== POSTURE ==========
+    const silhouette = document.getElementById('silhouette');
+    document.getElementById('addMarker').addEventListener('click', () => {
+      const m = document.createElement('div');
+      m.className = 'marker';
+      m.style.left = (30 + Math.random() * 60) + 'px';
+      m.style.top = (40 + Math.random() * 160) + 'px';
+      silhouette.appendChild(m);
+      state.markers.push(m);
+    });
+    document.getElementById('clearMarkers').addEventListener('click', () => {
+      state.markers.forEach(m => m.remove());
+      state.markers = [];
+    });
+
+    document.getElementById('postureFindings').addEventListener('change', e => {
+      const cb = e.target;
+      if (cb.dataset.f) {
+        if (cb.checked) state.postureChecked.add(cb.dataset.f);
+        else state.postureChecked.delete(cb.dataset.f);
+      }
+    });
+
+    document.getElementById('scorePosture').addEventListener('click', () => {
+      // Example case leans toward forward head + rounded shoulders + anterior pelvic tilt
+      const expected = new Set(['forward-head', 'rounded-shoulders', 'anterior-pelvic']);
+      let hits = 0;
+      state.postureChecked.forEach(f => { if (expected.has(f)) hits++; });
+      const fb = document.getElementById('postureFeedback');
+      fb.className = 'feedback-box show ' + (hits >= 2 ? 'good' : 'bad');
+      fb.innerHTML = hits >= 2
+        ? `<strong>Accurate pattern recognition.</strong> Common upper-crossed / lower-crossed contributions identified.`
+        : `<strong>Review the silhouette.</strong> Consider head position relative to thorax and pelvic orientation.`;
+      if (hits >= 2) showToast('Posture Mastery', 'Key postural deviations correctly documented.');
+    });
+
+    // ========== SPECIAL TESTS ==========
+    document.getElementById('testGrid').addEventListener('click', e => {
+      const card = e.target.closest('.test-card');
+      if (!card) return;
+      const t = card.dataset.test;
+      if (state.testsSelected.has(t)) {
+        state.testsSelected.delete(t);
+        card.classList.remove('selected');
+      } else {
+        if (state.testsSelected.size >= 3) return;
+        state.testsSelected.add(t);
+        card.classList.add('selected');
+      }
+      document.getElementById('selectedCount').textContent = state.testsSelected.size + ' / 3';
+    });
+
+    document.getElementById('clearTests').addEventListener('click', () => {
+      state.testsSelected.clear();
+      document.querySelectorAll('.test-card').forEach(c => c.classList.remove('selected'));
+      document.getElementById('selectedCount').textContent = '0 / 3';
+      document.getElementById('testFeedback').className = 'feedback-box';
+    });
+
+    document.getElementById('submitTests').addEventListener('click', () => {
+      const highYield = new Set(['lachman', 'pivot-shift', 'valgus']);
+      let score = 0;
+      state.testsSelected.forEach(t => {
+        if (highYield.has(t)) score += 2;
+        else score -= 1;
+      });
+      const fb = document.getElementById('testFeedback');
+      const good = score >= 4;
+      fb.className = 'feedback-box show ' + (good ? 'good' : 'bad');
+      fb.innerHTML = good
+        ? '<strong>Excellent selection.</strong> Lachman (and pivot-shift when tolerable) plus MCL screening form a high-yield acute ACL battery.'
+        : '<strong>Reconsider priorities.</strong> In acute pivot-injury with instability, prioritize Lachman and related ligamentous testing over lower-yield meniscal or neurological tests.';
+      if (good) showToast('Test Efficiency', 'High-yield test battery selected.');
+    });
+
+    // ========== TOAST ==========
+    function showToast(title, msg) {
+      const t = document.getElementById('toast');
+      document.getElementById('toastTitle').textContent = title;
+      document.getElementById('toastMsg').textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 3200);
+    }
+
+    // ========== RESET ==========
+    document.getElementById('resetProgress').addEventListener('click', () => {
+      if (!confirm('Reset current session progress?')) return;
+      state.asked.clear();
+      state.gaitSelected.clear();
+      state.postureChecked.clear();
+      state.testsSelected.clear();
+      state.markers.forEach(m => m.remove());
+      state.markers = [];
+      document.getElementById('chatMessages').innerHTML = `
+        <div class="msg pt">
+          <div class="role">Patient</div>
+          Hi… my lower back has been bothering me for about six weeks. It started after a long week of meetings. I’m hoping you can figure out what’s going on.
+        </div>`;
+      updateSubjectiveNotes();
+      updateSubjectiveScore();
+      document.querySelectorAll('.phase-item').forEach(i => i.classList.remove('active'));
+      document.querySelectorAll('#postureFindings input').forEach(i => i.checked = false);
+      document.querySelectorAll('.test-card').forEach(c => c.classList.remove('selected'));
+      document.getElementById('selectedCount').textContent = '0 / 3';
+      document.querySelectorAll('.feedback-box').forEach(f => f.className = 'feedback-box');
+      document.getElementById('reasoningNext').style.display = 'none';
+      document.querySelectorAll('#reasoningOptions .option').forEach(o => {
+        o.classList.remove('correct', 'wrong');
+      });
+      showToast('Session Reset', 'All interactive progress cleared.');
+    });
+
+    // Initial gait draw
+    drawGait(0);
+  </script>
+</body>
+</html>
